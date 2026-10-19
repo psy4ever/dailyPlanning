@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>日有度｜交互原型</title>
+<meta name="description" content="日有度 Android 优先的私人计划、行为与饮食记录 App 交互设计预览。">
+<style>html,body{margin:0;min-height:100%;background:#f0f3ee}body{font-family:system-ui,"Microsoft YaHei",sans-serif}</style>
+</head>
+<body><div id="daily-rhythm-preview" class="viz-dotted-background">
+  <style>
+    #daily-rhythm-preview{padding:20px 10px;box-sizing:border-box}
+    #daily-rhythm-preview .dr-phone{--dr-bg:#f6f5f0;--dr-ink:#263c35;--dr-green:#224f46;--dr-soft:#dfe9df;--dr-line:#dcded8;--dr-muted:#62736c;max-width:420px;margin:auto;background:var(--dr-bg);color:var(--dr-ink);border:1px solid var(--dr-line);border-radius:28px;overflow:hidden;font:14px/1.55 system-ui,"Microsoft YaHei",sans-serif;box-shadow:0 14px 45px #153b2610;color-scheme:light}
+    #daily-rhythm-preview .dr-phone *{box-sizing:border-box}
+    #daily-rhythm-preview .dr-top{padding:18px 24px 0;display:flex;justify-content:space-between;gap:10px;color:var(--dr-muted);font-size:12px}
+    #daily-rhythm-preview .dr-brand{color:var(--dr-green);font-weight:650}
+    #daily-rhythm-preview .dr-page{padding:18px 24px 24px;min-height:595px}
+    #daily-rhythm-preview h2{font-size:26px;line-height:1.35;font-weight:700;letter-spacing:-.6px;margin:6px 0 8px;color:var(--dr-ink)}
+    #daily-rhythm-preview h3{font-size:16px;line-height:1.5;font-weight:650;margin:24px 0 12px;color:var(--dr-ink)}
+    #daily-rhythm-preview p{margin:5px 0 10px}
+    #daily-rhythm-preview .dr-muted{color:var(--dr-muted);font-size:13px}
+    #daily-rhythm-preview button{font:inherit;min-height:44px;padding:9px 14px;border-radius:12px;border:1px solid var(--dr-line);background:#fff;color:var(--dr-ink)}
+    #daily-rhythm-preview .dr-primary{background:var(--dr-green);color:white;border-color:var(--dr-green)}
+    #daily-rhythm-preview .dr-week{display:flex;justify-content:space-between;margin:20px 0;gap:4px;font-size:12px;text-align:center;color:var(--dr-muted)}
+    #daily-rhythm-preview .dr-week span{padding:7px 4px;border-radius:10px;min-width:30px}
+    #daily-rhythm-preview .dr-week .dr-active{background:var(--dr-green);color:#fff}
+    #daily-rhythm-preview .dr-focus{background:var(--dr-green);color:#fff;border-radius:18px;padding:22px}
+    #daily-rhythm-preview .dr-focus h3{color:#fff;margin:10px 0 2px;font-size:22px}
+    #daily-rhythm-preview .dr-focus button{margin-top:14px;background:#fff;color:var(--dr-green);border:0}
+    #daily-rhythm-preview .dr-list{list-style:none;padding:0;margin:0}
+    #daily-rhythm-preview .dr-list li{padding:14px 0;border-bottom:1px solid var(--dr-line);display:flex;align-items:center;gap:16px}
+    #daily-rhythm-preview .dr-time{font-variant-numeric:tabular-nums;color:var(--dr-muted);font-size:12px;min-width:42px}
+    #daily-rhythm-preview .dr-list strong{display:block;font-weight:600}
+    #daily-rhythm-preview .dr-list small{font-size:12px;color:var(--dr-muted)}
+    #daily-rhythm-preview .dr-list button{margin-left:auto;flex-shrink:0;font-size:12px}
+    #daily-rhythm-preview .dr-list-right{margin-left:auto;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums;color:var(--dr-green)}
+    #daily-rhythm-preview .dr-intake-row{align-items:flex-start!important}
+    #daily-rhythm-preview .dr-intake-row div{min-width:0}
+    #daily-rhythm-preview .dr-intake-row strong{display:inline!important;margin-right:9px}
+    #daily-rhythm-preview .dr-energy{padding:17px 0 9px;border-bottom:1px solid var(--dr-line)}
+    #daily-rhythm-preview .dr-energy .dr-large{color:var(--dr-green)}
+    #daily-rhythm-preview .dr-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+    #daily-rhythm-preview .dr-form{padding:14px 0;border-top:1px solid var(--dr-line);margin-top:16px}
+    #daily-rhythm-preview .dr-form label{display:block;margin:10px 0 4px;font-size:13px;color:var(--dr-muted)}
+    #daily-rhythm-preview .dr-form select{width:100%;min-height:44px;padding:8px;border:1px solid #b5c2b7;border-radius:8px;background:#fff;color:var(--dr-ink);font:16px system-ui}
+    #daily-rhythm-preview .dr-form .dr-row{margin-top:12px}
+    #daily-rhythm-preview button:disabled{opacity:.58}
+    #daily-rhythm-preview .dr-soft{background:var(--dr-soft);border-radius:16px;padding:18px;margin:18px 0}
+    #daily-rhythm-preview .dr-large{font-size:30px;font-weight:650;letter-spacing:-.6px;font-variant-numeric:tabular-nums}
+    #daily-rhythm-preview .dr-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    #daily-rhythm-preview .dr-chart{height:18px;display:flex;border-radius:6px;overflow:hidden;margin:20px 0 12px}
+    #daily-rhythm-preview .dr-chart span:nth-child(1){width:33.333%;background:#224f46}
+    #daily-rhythm-preview .dr-chart span:nth-child(2){width:29.167%;background:#93ac91}
+    #daily-rhythm-preview .dr-chart span:nth-child(3){width:20.833%;background:#d9aa57}
+    #daily-rhythm-preview .dr-chart span:nth-child(4){width:16.667%;background:#ccd0cd}
+    #daily-rhythm-preview .dr-legend{display:grid;grid-template-columns:1fr 1fr;gap:9px;font-size:13px}
+    #daily-rhythm-preview .dr-score{margin:18px 0;padding:16px 0;border-top:1px solid var(--dr-line);border-bottom:1px solid var(--dr-line)}
+    #daily-rhythm-preview .dr-score .dr-large{font-size:44px;color:var(--dr-green)}
+    #daily-rhythm-preview .dr-fields{display:grid;grid-template-columns:minmax(0,1fr) 64px 64px;gap:8px;align-items:center;margin:10px 0}
+    #daily-rhythm-preview input{width:100%;min-width:0;min-height:44px;padding:8px;border:1px solid #b5c2b7;border-radius:8px;background:white;color:var(--dr-ink);font:16px system-ui}
+    #daily-rhythm-preview .dr-fields span{font-size:12px;color:var(--dr-muted)}
+    #daily-rhythm-preview .dr-error{color:#a53c30;font-size:13px}
+    #daily-rhythm-preview .dr-nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--dr-line);padding:8px 8px 12px;background:#fff;gap:3px}
+    #daily-rhythm-preview .dr-nav button{border:0;background:transparent;border-radius:10px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px;flex-direction:column;color:var(--dr-muted)}
+    #daily-rhythm-preview .dr-nav button[aria-current="page"]{color:var(--dr-green);background:#edf2eb;font-weight:650}
+    #daily-rhythm-preview .dr-nav svg{width:20px;height:20px}
+    #daily-rhythm-preview .dr-note{font-size:12px;color:var(--dr-muted);margin-top:16px}
+    #daily-rhythm-preview [hidden]{display:none!important}
+    #daily-rhythm-preview .dr-status{padding:0 24px 10px;font-size:12px;color:var(--dr-muted)}
+    @media(max-width:380px){#daily-rhythm-preview{padding:8px 0}#daily-rhythm-preview .dr-page{padding:16px;min-height:610px}#daily-rhythm-preview .dr-top{padding:16px 16px 0}#daily-rhythm-preview h2{font-size:23px}#daily-rhythm-preview .dr-focus{padding:18px}}
+  </style>
+  <div class="dr-phone" aria-label="日有度 Android 首版设计预览">
+    <div class="dr-top"><span class="dr-brand">日有度</span><span>设计预览 · 示例数据</span></div>
+    <section class="dr-page" data-page="today" aria-label="今天">
+      <p class="dr-muted">10月19日 周一</p><h2>给今天，留一点余地</h2><p class="dr-muted">今天的 3 件重要小事</p>
+      <div class="dr-week" aria-label="10月19日至25日"><span class="dr-active">一<br>19</span><span>二<br>20</span><span>三<br>21</span><span>四<br>22</span><span>五<br>23</span><span>六<br>24</span><span>日<br>25</span></div>
+      <div class="dr-focus"><span id="dr-session-label">接下来 · 09:00–10:30</span><h3>项目开发</h3><p>先完成时间记录模块</p><button type="button" id="dr-start">开始记录</button></div>
+      <h3>今日时间线</h3><ul class="dr-list"><li><span class="dr-time">07:30</span><div><strong>早餐</strong><small>已记录</small></div></li><li><span class="dr-time">09:00</span><div><strong>项目开发</strong><small id="dr-activity-status">计划 90 分钟</small></div></li><li><span class="dr-time">12:00</span><div><strong>午餐</strong><small>待记录</small></div></li><li><span class="dr-time">18:30</span><div><strong>散步</strong><small>计划 30 分钟</small></div></li></ul>
+      <p class="dr-note">计划可以调整，记录无需完美。</p>
+    </section>
+    <section class="dr-page" data-page="record" aria-label="饮食与其他记录" hidden>
+      <h2>记录今天的摄入</h2>
+      <div class="dr-energy"><span class="dr-muted">已知摄入 · 示例数据</span><div class="dr-large" id="dr-known-kcal">1,180 kcal</div><p class="dr-muted" id="dr-incomplete">晚餐未记录；没有摄入目标</p></div>
+      <h3>饮食记录</h3>
+      <ul class="dr-list" id="dr-intake-list">
+        <li class="dr-intake-row"><span class="dr-time">08:00</span><div><strong>早餐</strong><small>鸡蛋 · 牛奶 · 全麦面包</small></div><span class="dr-list-right">310 kcal</span></li>
+        <li class="dr-intake-row"><span class="dr-time">12:20</span><div><strong>午餐</strong><small>米饭 · 鸡肉 · 时蔬</small></div><span class="dr-list-right">520 kcal</span></li>
+        <li class="dr-intake-row"><span class="dr-time">16:10</span><div><strong>加餐</strong><small>酸奶 · 香蕉</small></div><span class="dr-list-right">350 kcal</span></li>
+        <li id="dr-dinner-placeholder"><span class="dr-time">—</span><div><strong>晚餐</strong><small>还未记录</small></div><button type="button" id="dr-dinner-open">＋ 记录</button></li>
+      </ul>
+      <div class="dr-actions"><button type="button" id="dr-intake-open" class="dr-primary">＋ 记录一次摄入</button><button type="button" id="dr-food-open">维护营养表</button></div>
+      <div id="dr-food-form" class="dr-form" hidden><strong>添加自定义食物</strong><label for="dr-food-name">食物名称</label><input id="dr-food-name" maxlength="60" placeholder="例如：无糖酸奶"><label for="dr-food-kcal">每 100g 热量（kcal）</label><input id="dr-food-kcal" type="number" min="0" step="0.1" placeholder="例如：60"><label for="dr-food-prepared">生熟或包装状态</label><select id="dr-food-prepared"><option value="">请选择</option><option value="生">生</option><option value="熟">熟</option><option value="包装">包装</option><option value="未知">未知</option></select><label for="dr-food-source">数据来源</label><select id="dr-food-source"><option value="包装标识">包装标识</option><option value="用户估算">用户估算</option></select><div class="dr-row"><button type="button" id="dr-food-save" class="dr-primary">保存到示例食物表</button><button type="button" id="dr-food-cancel">取消</button></div></div>
+      <div id="dr-intake-form" class="dr-form" hidden><strong>记录一次摄入</strong><label for="dr-intake-kind">餐次</label><select id="dr-intake-kind"><option value="加餐">加餐</option><option value="早餐">早餐</option><option value="午餐">午餐</option><option value="晚餐">晚餐</option></select><label for="dr-intake-time">时间</label><input id="dr-intake-time" type="time" value="16:30"><label for="dr-intake-food">食物（先在营养表中创建）</label><select id="dr-intake-food"></select><label for="dr-intake-grams">食用量（克，可稍后补充）</label><input id="dr-intake-grams" type="number" min="0.1" step="0.1" placeholder="例如：150"><div class="dr-row"><button type="button" id="dr-intake-save" class="dr-primary">保存摄入</button><button type="button" id="dr-intake-cancel">取消</button></div></div>
+      <h3>其他记录</h3><ul class="dr-list"><li><div><strong>昨夜睡眠</strong><small>23:45 → 07:15 · 示例数据</small></div></li><li><div><strong>饮水</strong><small>可选模块 · 规划中</small></div></li><li><div><strong>生理周期</strong><small>可选私密模块 · 规划中</small></div></li></ul>
+    </section>
+    <section class="dr-page" data-page="insights" aria-label="时间与个人回报" hidden>
+      <h2>时间去向</h2><p class="dr-muted">10月18日 · 示例数据 · 昨日 24 小时</p>
+      <div class="dr-chart" role="img" aria-label="睡眠8小时，工作7小时，生活5小时，未记录4小时"><span></span><span></span><span></span><span></span></div>
+      <div class="dr-legend"><span>睡眠　8 h · 33.3%</span><span>工作　7 h · 29.2%</span><span>生活　5 h · 20.8%</span><span>未记录　4 h · 16.7%</span></div>
+      <h3>按自己的标准，看回报</h3><div class="dr-score"><div class="dr-muted">示例活动 · 个人回报 · 主观自评</div><span class="dr-large" id="dr-score">76.7</span><span id="dr-score-unit"> /100</span><p id="dr-weights-text">社交 3 · 娱乐 3 · 收入 3</p><p class="dr-muted" id="dr-rating-text">社交 8分 · 娱乐 6分 · 收入 9分</p><button type="button" id="dr-edit-weights">调整维度与权重</button></div>
+      <div class="dr-soft"><strong>回报与付出，分开看</strong><p>用时 90 分钟 · 支出 ¥20</p><p>精力消耗 2/5</p></div><p class="dr-note">示例已完成权重确认。实际使用首次分析前，需要你确认自己的维度与权重。</p>
+    </section>
+    <section class="dr-page" data-page="mine" aria-label="我的价值权重" hidden>
+      <h2>由你定义，什么值得</h2><p class="dr-muted">首次分析必填 · 每个维度名称与权重由你设定</p>
+      <div class="dr-row"><button type="button" data-preset="balanced">均衡 3:3:3</button><button type="button" data-preset="income">收入优先 4:2:2</button></div>
+      <form id="dr-weight-form"><div class="dr-fields"><span>维度名称</span><span>权重</span><span>示例评分</span></div><div id="dr-weight-rows"></div><button type="button" id="dr-add-dimension">＋ 添加维度</button><p class="dr-muted" id="dr-proportions"></p><p class="dr-error" role="alert" id="dr-validation"></p><button type="button" id="dr-confirm-weights" class="dr-primary">确认我的权重</button></form>
+      <p class="dr-note">权重代表重视程度；评分代表实际获得，0–10 分，可留空待补充。修改后生成新版本，保留历史结果。</p><div class="dr-soft"><strong>数据属于你</strong><p class="dr-muted">正式版支持本地保存、导出与恢复。此预览仅演示页面和计算，不保存真实生活记录。</p></div>
+    </section>
+    <div class="dr-status" id="dr-status" role="status" aria-live="polite"></div>
+    <nav class="dr-nav" aria-label="主要导航"><button type="button" data-nav="today" aria-current="page">今天</button><button type="button" data-nav="record">记录</button><button type="button" data-nav="insights">洞察</button><button type="button" data-nav="mine">我的</button></nav>
+  </div>
+  <script>
+  (()=>{
+    const root=document.getElementById('daily-rhythm-preview');
+    const $=s=>root.querySelector(s);const $$=s=>[...root.querySelectorAll(s)];
+    let model=[{name:'社交',weight:3,score:8},{name:'娱乐',weight:3,score:6},{name:'收入',weight:3,score:9}];let draft=model.map(x=>({...x}));let running=false;
+    function status(s){$('#dr-status').textContent=s;}
+    function page(name){$$('[data-page]').forEach(p=>p.hidden=p.dataset.page!==name);$$('[data-nav]').forEach(b=>{if(b.dataset.nav===name)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});status('');}
+    $$('[data-nav]').forEach(b=>b.addEventListener('click',()=>page(b.dataset.nav)));
+    $('#dr-start').addEventListener('click',()=>{running=!running;$('#dr-start').textContent=running?'结束记录':'再记一段';$('#dr-session-label').textContent=running?'记录中 · 演示状态':'本段已结束 · 演示状态';$('#dr-activity-status').textContent=running?'正在记录':'本段已结束';status(running?'已展示计时中状态；此预览不运行真实后台计时器。':'已展示结束状态；实际时长未写入。');});
+    let demoFoods=[];let knownKcal=1180;let incompleteCount=0;
+    function showFoodForm(){ $('#dr-food-form').hidden=false;$('#dr-intake-form').hidden=true;status('先创建食物的每 100g 热量，再记录实际食用量。'); }
+    function showIntakeForm(kind){$('#dr-intake-form').hidden=false;$('#dr-food-form').hidden=true;$('#dr-intake-kind').value=kind;status(demoFoods.length?'选择食物并填写克数。':'示例食物表为空，请先创建一个食物。');}
+    $('#dr-food-open').addEventListener('click',showFoodForm);
+    $('#dr-dinner-open').addEventListener('click',()=>showIntakeForm('晚餐'));
+    $('#dr-intake-open').addEventListener('click',()=>showIntakeForm('加餐'));
+    $('#dr-food-cancel').addEventListener('click',()=>{$('#dr-food-form').hidden=true;status('');});
+    $('#dr-intake-cancel').addEventListener('click',()=>{$('#dr-intake-form').hidden=true;status('');});
+    $('#dr-food-save').addEventListener('click',()=>{const name=$('#dr-food-name').value.trim();const raw=$('#dr-food-kcal').value.trim();const kcal=Number(raw);const prepared=$('#dr-food-prepared').value;if(!name||raw===''||!Number.isFinite(kcal)||kcal<0||!prepared){status('请填写食物名称、每 100g 热量与生熟/包装状态。');return;}const food={name,kcal,prepared,source:$('#dr-food-source').value};demoFoods.push(food);const option=document.createElement('option');option.value=String(demoFoods.length-1);option.textContent=`${name} · ${prepared} · ${kcal} kcal/100g`;$('#dr-intake-food').appendChild(option);$('#dr-intake-food').value=option.value;$('#dr-food-form').hidden=true;$('#dr-food-name').value='';$('#dr-food-kcal').value='';$('#dr-food-prepared').value='';showIntakeForm('加餐');status('已加入示例食物表；现在可以填写摄入量。');});
+    $('#dr-intake-save').addEventListener('click',()=>{const selected=demoFoods[Number($('#dr-intake-food').value)];const raw=$('#dr-intake-grams').value.trim();const grams=raw===''?null:Number(raw);if(!selected){status('请先创建并选择食物。');return;}if(!$('#dr-intake-time').value||(grams!==null&&(!Number.isFinite(grams)||grams<=0))){status('请填写有效时间与食用克数，或把克数留空待补充。');return;}const amount=grams===null?null:Math.round(selected.kcal*grams/100*10)/10;const li=document.createElement('li');li.className='dr-intake-row';const time=document.createElement('span');time.className='dr-time';time.textContent=$('#dr-intake-time').value;const detail=document.createElement('div');const strong=document.createElement('strong');strong.textContent=$('#dr-intake-kind').value;const small=document.createElement('small');small.textContent=`${selected.name} · ${grams===null?'份量待补充':grams+'g'} · ${selected.source}`;detail.append(strong,small);const value=document.createElement('span');value.className='dr-list-right';value.textContent=amount===null?'待补全':`${amount.toLocaleString('zh-CN')} kcal`;li.append(time,detail,value);$('#dr-intake-list').appendChild(li);if($('#dr-intake-kind').value==='晚餐')$('#dr-dinner-placeholder').hidden=true;if(amount===null)incompleteCount++;else knownKcal+=amount;$('#dr-known-kcal').textContent=`${knownKcal.toLocaleString('zh-CN',{maximumFractionDigits:1})} kcal`;$('#dr-incomplete').textContent=incompleteCount?`${incompleteCount} 项食物待补全 · 已知摄入为部分合计`:'所有已记录食物有热量；未记录的饮食仍未知';$('#dr-intake-form').hidden=true;$('#dr-intake-grams').value='';status('已更新本次预览；刷新后恢复示例数据。');});
+    function preview(){const total=draft.reduce((s,x)=>s+(Number(x.weight)||0),0);$('#dr-proportions').textContent=total>0?draft.map(x=>`${x.name||'未命名'} ${((Number(x.weight)||0)/total*100).toFixed(1)}%`).join(' · '):'请填写正权重';}
+    function renderRows(){const rows=$('#dr-weight-rows');rows.replaceChildren();draft.forEach((d,index)=>{const line=document.createElement('div');line.className='dr-fields';for(const key of ['name','weight','score']){const input=document.createElement('input');input.type=key==='name'?'text':'number';input.value=d[key]===null?'':d[key];input.setAttribute('aria-label',`第${index+1}个维度${key==='name'?'名称':key==='weight'?'权重':'评分'}`);if(key==='name'){input.maxLength=12;input.required=true;}else{input.min=key==='weight'?'0.1':'0';input.max=key==='weight'?'100':'10';input.step='0.1';input.required=key==='weight';}input.addEventListener('input',()=>{draft[index][key]=key==='name'?input.value:input.value===''?null:Number(input.value);preview();});line.appendChild(input);}rows.appendChild(line);});preview();}
+    function showResult(){const total=model.reduce((s,x)=>s+x.weight,0);const complete=model.every(x=>x.score!==null);$('#dr-score').textContent=complete?(10*model.reduce((s,x)=>s+x.weight*x.score,0)/total).toFixed(1):'待补充';$('#dr-score-unit').textContent=complete?' /100':'';$('#dr-weights-text').textContent=model.map(x=>`${x.name} ${x.weight}`).join(' · ');$('#dr-rating-text').textContent=model.map(x=>`${x.name} ${x.score===null?'未评分':x.score+'分'}`).join(' · ');}
+    $('#dr-edit-weights').addEventListener('click',()=>{draft=model.map(x=>({...x}));renderRows();page('mine');});
+    $$('[data-preset]').forEach(b=>b.addEventListener('click',()=>{draft=[{name:'社交',weight:b.dataset.preset==='income'?2:3,score:8},{name:'娱乐',weight:b.dataset.preset==='income'?2:3,score:6},{name:'收入',weight:b.dataset.preset==='income'?4:3,score:9}];renderRows();}));
+    $('#dr-add-dimension').addEventListener('click',()=>{if(draft.length>=6){status('此预览最多 6 个维度。');return;}draft.push({name:'',weight:1,score:null});renderRows();});
+    $('#dr-confirm-weights').addEventListener('click',e=>{e.preventDefault();const names=draft.map(x=>x.name.trim());const invalid=draft.some(x=>!x.name.trim()||!Number.isFinite(x.weight)||x.weight<=0||(x.score!==null&&(!Number.isFinite(x.score)||x.score<0||x.score>10)))||new Set(names).size!==names.length;if(invalid){$('#dr-validation').textContent='名称不能重复或为空，权重须大于 0，评分为 0–10 或留空。';return;}$('#dr-validation').textContent='';model=draft.map(x=>({...x,name:x.name.trim()}));showResult();page('insights');status('已确认此预览的权重；正式版将保存为新的模型版本。');});
+    renderRows();showResult();
+  })();
+  </script>
+</div>
+</body>
+</html>

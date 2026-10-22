@@ -12,3 +12,12 @@ local.properties
 __pycache__/
 .DS_Store
 Thumbs.db
+/dist/
+/android/cloud-api.properties
+.backup-key
+*.enc
+*.enc.hmac
+*.jks
+*.keystore
+*.p12
+keystore.properties

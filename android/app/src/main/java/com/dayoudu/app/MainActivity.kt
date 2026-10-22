@@ -54,6 +54,7 @@ class MainActivity : ComponentActivity() {
         val backup = BackupRepository(applicationContext, NutritionDatabase.get(applicationContext))
         val ledger = LedgerRepository(NutritionDatabase.get(applicationContext))
         val localUser = LocalUserRepository(NutritionDatabase.get(applicationContext))
+        com.dayoudu.app.data.CloudSync.get(applicationContext).start()
         setContent {
             MaterialTheme(
                 colorScheme = lightColorScheme(primary = Pine, onSurface = Ink, background = Cream,
@@ -77,8 +78,10 @@ private fun DailyRhythmApp(nutrition: NutritionRepository, planning: PlanningRep
                            ledger: LedgerRepository, localUser: LocalUserRepository,
                            onRestored: () -> Unit) {
     var selectedTab by remember { mutableStateOf(MainTab.TODAY) }
+    var recordDetail by remember { mutableStateOf(false) }
     Scaffold(containerColor = Cream,
         bottomBar = {
+            if (!recordDetail || selectedTab != MainTab.RECORD) {
             NavigationBar(containerColor = Color.White, tonalElevation = 0.dp) {
                 MainTab.entries.forEach { tab ->
                     NavigationBarItem(
@@ -93,11 +96,12 @@ private fun DailyRhythmApp(nutrition: NutritionRepository, planning: PlanningRep
                     )
                 }
             }
+            }
         },
     ) { padding ->
         when (selectedTab) {
             MainTab.TODAY -> TodayScreen(planning, padding)
-            MainTab.RECORD -> RecordScreen(nutrition, sleep, ledger, padding)
+            MainTab.RECORD -> RecordScreen(nutrition, sleep, ledger, padding) { recordDetail = it }
             MainTab.MINE -> MineScreen(localUser, backup, padding, onRestored)
         }
     }

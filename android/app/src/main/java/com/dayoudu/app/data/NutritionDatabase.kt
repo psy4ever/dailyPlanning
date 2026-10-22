@@ -116,8 +116,8 @@ interface IntakeDao {
     SleepLogEntity::class, ValueModelVersionEntity::class, ValueDimensionEntity::class,
     ActivityEvaluationEntity::class, DimensionRatingEntity::class,
     TimeCategoryEntity::class, ProjectEntity::class, ActivityTagEntity::class,
-    LocalUserEntity::class, LedgerEntryEntity::class],
-    version = 10, exportSchema = true)
+    LocalUserEntity::class, LedgerEntryEntity::class, NutritionDayEntity::class],
+    version = 11, exportSchema = true)
 abstract class NutritionDatabase : RoomDatabase() {
     abstract fun foodDao(): FoodDao
     abstract fun intakeDao(): IntakeDao
@@ -128,6 +128,7 @@ abstract class NutritionDatabase : RoomDatabase() {
     abstract fun classificationDao(): ClassificationDao
     abstract fun localUserDao(): LocalUserDao
     abstract fun ledgerDao(): LedgerDao
+    abstract fun nutritionDayDao(): NutritionDayDao
 
     companion object {
         @Volatile private var instance: NutritionDatabase? = null
@@ -137,8 +138,10 @@ abstract class NutritionDatabase : RoomDatabase() {
                 context.applicationContext,
                 NutritionDatabase::class.java,
                 "daily-rhythm.db",
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-                MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10).build().also { instance = it }
+            ).addCallback(object : Callback() {
+                override fun onOpen(db: SupportSQLiteDatabase) { CloudStore.install(db, context.applicationContext) }
+            }).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+                MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11).build().also { instance = it }
         }
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -262,6 +265,18 @@ abstract class NutritionDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE `plans` ADD COLUMN `deletedAtMillis` INTEGER")
             }
         }
+        internal val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `ledger_entries` ADD COLUMN `category` TEXT")
+                db.execSQL("ALTER TABLE `ledger_entries` ADD COLUMN `note` TEXT")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS `nutrition_days` (`id` TEXT NOT NULL,
+                    `date` TEXT NOT NULL, `timezone` TEXT NOT NULL, `budgetKcal` TEXT,
+                    `exerciseKcal` TEXT, `proteinGoal` TEXT, `fatGoal` TEXT, `carbGoal` TEXT,
+                    `version` INTEGER NOT NULL, PRIMARY KEY(`id`))""")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_nutrition_days_date_timezone` ON `nutrition_days` (`date`, `timezone`)")
+            }
+        }
+
         private val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("""CREATE TABLE IF NOT EXISTS `local_users` (`id` TEXT NOT NULL,

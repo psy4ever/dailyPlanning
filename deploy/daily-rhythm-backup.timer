@@ -1,0 +1,10 @@
+[Unit]
+Description=Back up Daily Rhythm every day
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 Asia/Shanghai
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

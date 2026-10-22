@@ -91,6 +91,7 @@ fun TodayScreen(repository: PlanningRepository, padding: PaddingValues) {
     var selectedPlan by remember { mutableStateOf<PlanEntity?>(null) }
     var selectedActivity by remember { mutableStateOf<ActivityWithSegments?>(null) }
     var pendingDocument by remember { mutableStateOf<DailyPlanDocument?>(null) }
+    var pendingTextModes by remember { mutableStateOf<List<Pair<String, DailyPlanDocument>>?>(null) }
     var batchDocument by remember { mutableStateOf<DailyPlanDocument?>(null) }
     var exportJson by remember { mutableStateOf<String?>(null) }
     var showDayMenu by remember { mutableStateOf(false) }
@@ -115,8 +116,13 @@ fun TodayScreen(repository: PlanningRepository, padding: PaddingValues) {
             runCatching { withContext(Dispatchers.IO) {
                 val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytesLimited(512_000) }
                     ?: throw IllegalStateException("无法读取文件")
-                DailyPlanCodec.decode(bytes.toString(Charsets.UTF_8))
-            } }.onSuccess { pendingDocument = it }.onFailure { message = it.message ?: "导入失败" }
+                val content = bytes.toString(Charsets.UTF_8).trimStart('\uFEFF', ' ', '\n', '\r', '\t')
+                if (content.startsWith("{")) listOf("日计划" to DailyPlanCodec.decode(content))
+                else DailyPlanCodec.decodeTextTemplate(content, date, zone)
+            } }.onSuccess { modes ->
+                message = null
+                if (modes.size == 1) pendingDocument = modes.single().second else pendingTextModes = modes
+            }.onFailure { message = it.message ?: "导入失败；请选择日计划 JSON 或时间安排 TXT" }
         }
     }
 
@@ -236,6 +242,7 @@ fun TodayScreen(repository: PlanningRepository, padding: PaddingValues) {
                 PlanRow(entry.plan, zone, linkedCount = entry.linked.size,
                     isFirst = index == 0, isLast = index == timeline.lastIndex,
                     onOpen = { selectedPlan = entry.plan },
+                    onEdit = { editingPlan = entry.plan; showPlanEditor = true },
                     onComplete = { scope.launch { runCatching { repository.changePlanStatus(entry.plan.id, entry.plan.version, "COMPLETE") }
                         .onFailure { message = it.message } } })
             }
@@ -266,16 +273,6 @@ fun TodayScreen(repository: PlanningRepository, padding: PaddingValues) {
         val current = plans.firstOrNull { it.id == plan.id } ?: plan
         PlanDetailDialog(current, planActivities.filter { it.activity.planId == plan.id }, zone,
             onOpenActivity = { selectedPlan = null; selectedActivity = it },
-            onStart = { selectedPlan = null; startPlan = current; showStart = true },
-            onManual = { selectedPlan = null; manualPlan = current; showManual = true },
-            onEdit = { selectedPlan = null; editingPlan = current; showPlanEditor = true },
-            onCopy = {
-                selectedPlan = null
-                pickDate(context, date.plusDays(1)) { target ->
-                    scope.launch { runCatching { repository.copyPlanToDate(current.id, current.version, target, zone) }
-                        .onSuccess { notice = "已复制到 $target"; message = null }.onFailure { message = it.message } }
-                }
-            },
             onCancel = { selectedPlan = null; scope.launch { runCatching { repository.changePlanStatus(current.id, current.version, "CANCELLED") }.onFailure { message = it.message } } },
             onRemove = { selectedPlan = null; scope.launch { runCatching { repository.removePlan(current.id, current.version) }
                 .onSuccess { lastRemovedPlan = current.id to current.version + 1 }.onFailure { message = it.message } } },
@@ -288,6 +285,17 @@ fun TodayScreen(repository: PlanningRepository, padding: PaddingValues) {
         onResume = { selectedActivity = null; scope.launch { runCatching { repository.resume(activity.activity.id) }.onFailure { message = it.message } } },
         onFinish = { selectedActivity = null; scope.launch { runCatching { repository.finish(activity.activity.id) }.onFailure { message = it.message } } },
         onClose = { selectedActivity = null }) }
+    pendingTextModes?.let { modes -> AlertDialog(onDismissRequest = { pendingTextModes = null },
+        title = { Text("选择要导入的安排") },
+        text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("文件包含两套时间表。请选择一种导入到 $date；跨日睡眠不作为当天计划导入。")
+            modes.forEach { (label, document) ->
+                TextButton(onClick = { pendingDocument = document; pendingTextModes = null }) {
+                    Text("$label · ${document.items.size} 项")
+                }
+            }
+        } },
+        confirmButton = { TextButton(onClick = { pendingTextModes = null }) { Text("返回") } }) }
     pendingDocument?.let { document ->
         AlertDialog(onDismissRequest = { pendingDocument = null }, title = { Text("添加到 $date？") },
             text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -363,7 +371,7 @@ private fun BatchPlanDialog(document: DailyPlanDocument, selectedDate: LocalDate
 
 @Composable
 private fun PlanRow(plan: PlanEntity, zone: ZoneId, linkedCount: Int, isFirst: Boolean, isLast: Boolean,
-                    onOpen: () -> Unit, onComplete: () -> Unit) {
+                    onOpen: () -> Unit, onEdit: () -> Unit, onComplete: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(plan.scheduledStartMillis.asClock(zone), Modifier.width(44.dp), color = Pine,
             style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
@@ -385,8 +393,9 @@ private fun PlanRow(plan: PlanEntity, zone: ZoneId, linkedCount: Int, isFirst: B
                         if (linkedCount > 0) " · $linkedCount 条执行" else "",
                         color = MutedInk, style = MaterialTheme.typography.bodySmall)
                 }
-                if (plan.status !in setOf("COMPLETE", "CANCELLED")) {
-                    TextButton(onClick = onComplete) { Text("完成") }
+                if (plan.status != "CANCELLED") Column {
+                    TextButton(onClick = onEdit) { Text("调整") }
+                    if (plan.status != "COMPLETE") TextButton(onClick = onComplete) { Text("完成") }
                 } else Text("›", Modifier.padding(end = 10.dp), color = MutedInk)
             }
         }
@@ -410,9 +419,7 @@ private fun ActivityRow(item: ActivityWithSegments, zone: ZoneId, onOpen: () -> 
 
 @Composable
 private fun PlanDetailDialog(plan: PlanEntity, linked: List<ActivityWithSegments>, zone: ZoneId,
-                             onOpenActivity: (ActivityWithSegments) -> Unit, onStart: () -> Unit,
-                             onManual: () -> Unit,
-                             onEdit: () -> Unit, onCopy: () -> Unit, onCancel: () -> Unit,
+                             onOpenActivity: (ActivityWithSegments) -> Unit, onCancel: () -> Unit,
                              onRemove: () -> Unit, onClose: () -> Unit) {
     var confirmRemove by remember(plan.id) { mutableStateOf(false) }
     AlertDialog(onDismissRequest = onClose, title = { Text(plan.title) },
@@ -433,14 +440,6 @@ private fun PlanDetailDialog(plan: PlanEntity, linked: List<ActivityWithSegments
                 }
             }
             if (plan.status != "CANCELLED") {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton(onClick = onStart) { Text("开始活动") }
-                    TextButton(onClick = onManual) { Text("补记执行") }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton(onClick = onEdit) { Text("调整计划") }
-                    TextButton(onClick = onCopy) { Text("复制到某天") }
-                }
                 TextButton(onClick = onCancel) { Text("取消计划") }
             }
             TextButton(onClick = { confirmRemove = true }) { Text("移除计划", color = MaterialTheme.colorScheme.error) }

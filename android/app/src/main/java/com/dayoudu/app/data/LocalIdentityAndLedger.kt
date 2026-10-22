@@ -58,6 +58,8 @@ data class LedgerEntryEntity(
     val amount: String,
     val version: Int,
     val deletedAtMillis: Long? = null,
+    val category: String? = null,
+    val note: String? = null,
 )
 
 @Dao
@@ -75,10 +77,13 @@ class LedgerRepository(private val database: NutritionDatabase) {
             date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli())
 
     suspend fun save(id: String?, expectedVersion: Int?, at: LocalDateTime, zone: ZoneId,
-                     type: String, source: String, amountText: String) {
+                     type: String, source: String, amountText: String,
+                     category: String? = null, note: String? = null) {
         require(type in setOf("INCOME", "EXPENSE")) { "请选择收入或支出" }
         val cleanSource = source.trim()
         require(cleanSource.isNotEmpty() && cleanSource.length <= 100) { "来源须为 1–100 字" }
+        require(category == null || (if (type == "INCOME") incomeCategories else expenseCategories).any { it.key == category }) { "请选择有效分类" }
+        require((note?.length ?: 0) <= 500) { "备注不能超过 500 字" }
         val amount = amountText.trim().toBigDecimalOrNull() ?: throw IllegalArgumentException("请填写有效金额")
         require(amount > BigDecimal.ZERO && amount.scale() <= 2 && amount.precision() <= 14) {
             "金额须大于 0，最多两位小数"
@@ -90,10 +95,11 @@ class LedgerRepository(private val database: NutritionDatabase) {
                 "账目已变化，请重新打开"
             }
             if (old == null) database.ledgerDao().insert(LedgerEntryEntity(UUID.randomUUID().toString(),
-                millis, zone.id, type, cleanSource, amount.stripTrailingZeros().toPlainString(), 1))
+                millis, zone.id, type, cleanSource, amount.stripTrailingZeros().toPlainString(), 1,
+                category = category, note = note?.trim()?.takeIf { it.isNotEmpty() }))
             else database.ledgerDao().update(old.copy(occurredAtMillis = millis, timezone = zone.id,
                 type = type, source = cleanSource, amount = amount.stripTrailingZeros().toPlainString(),
-                version = old.version + 1))
+                version = old.version + 1, category = category, note = note?.trim()?.takeIf { it.isNotEmpty() }))
         }
     }
 

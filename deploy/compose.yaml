@@ -1,0 +1,36 @@
+name: daily-rhythm
+
+services:
+  db:
+    image: mysql:8.4@sha256:0f51e63e537a1f176423fa03ef559aabe6fa4372a53160a44bc7e75da7d15364
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: daily_rhythm
+      MYSQL_USER: daily_rhythm_app
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Missing MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Missing MYSQL_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP
+          -h 127.0.0.1 -u "$${MYSQL_USER}" "$${MYSQL_DATABASE}"
+          --execute='SELECT 1' --skip-column-names --silent
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 18
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  mysql_data:
+    name: daily-rhythm-mysql-data

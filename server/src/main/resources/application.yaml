@@ -1,0 +1,21 @@
+server:
+  port: 8080
+  error:
+    include-message: never
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://db:3306/daily_rhythm?connectionTimeZone=UTC&characterEncoding=UTF-8}
+    username: ${DB_USER:daily_rhythm_app}
+    password: ${MYSQL_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+  flyway:
+    enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+daily:
+  verify-restored: ${VERIFY_RESTORED:false}
+  username: ${DAILY_USERNAME:}
+  password: ${DAILY_PASSWORD:}
+  registration-enabled: ${REGISTRATION_ENABLED:true}

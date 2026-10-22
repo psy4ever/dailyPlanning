@@ -44,6 +44,29 @@ class NutritionRepository(private val database: NutritionDatabase) {
     suspend fun latestFoods(): List<FoodVersionEntity> = database.foodDao().latestFoods()
     suspend fun allLatestFoods(): List<FoodVersionEntity> = database.foodDao().allLatestFoods()
 
+    fun observeNutritionDay(date: LocalDate, zone: ZoneId) = database.nutritionDayDao().observe(date.toString(), zone.id)
+
+    suspend fun saveNutritionDay(date: LocalDate, zone: ZoneId, expectedVersion: Int?,
+        budget: String, exercise: String, protein: String, fat: String, carb: String) {
+        fun number(text: String, label: String): String? {
+            if (text.isBlank()) return null
+            val value = text.trim().toBigDecimalOrNull()
+            require(value != null && value >= BigDecimal.ZERO && value <= BigDecimal("100000") && value.scale() <= 2) {
+                "$label 须为 0–100000 的数值，最多两位小数"
+            }
+            return value.toPlainString()
+        }
+        val values = listOf(number(budget, "热量预算"), number(exercise, "运动消耗"),
+            number(protein, "蛋白质目标"), number(fat, "脂肪目标"), number(carb, "碳水目标"))
+        database.withTransaction {
+            val old = database.nutritionDayDao().get(date.toString(), zone.id)
+            require(old?.version == expectedVersion) { "当日目标已变化，请重新打开" }
+            val day = NutritionDayEntity(old?.id ?: nutritionDayId(date, zone), date.toString(), zone.id,
+                values[0], values[1], values[2], values[3], values[4], (old?.version ?: 0) + 1)
+            if (old == null) database.nutritionDayDao().insert(day) else database.nutritionDayDao().update(day)
+        }
+    }
+
     suspend fun saveFood(foodId: String?, expectedVersion: Int?, draft: FoodDraft) {
         val name = draft.name.trim()
         require(name.isNotEmpty() && name.length <= 120) { "请填写 1–120 字的食物名称" }

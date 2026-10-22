@@ -1,0 +1,9 @@
+* text=auto
+
+# Deployment files must also work after a checkout on Windows.
+*.sh text eol=lf
+*.py text eol=lf
+*.sql text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+gradlew text eol=lf

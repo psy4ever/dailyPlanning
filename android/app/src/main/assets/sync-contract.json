@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 2,
+  "kinds": {
+    "category": {
+      "root": "time_categories",
+      "key": "id",
+      "children": {}
+    },
+    "project": {
+      "root": "projects",
+      "key": "id",
+      "children": {}
+    },
+    "plan": {
+      "root": "plans",
+      "key": "id",
+      "children": {
+        "plan_revisions": "planId"
+      }
+    },
+    "activity": {
+      "root": "activities",
+      "key": "id",
+      "children": {
+        "activity_segments": "activityId",
+        "activity_tags": "activityId"
+      }
+    },
+    "ledger": {
+      "root": "ledger_entries",
+      "key": "id",
+      "children": {}
+    },
+    "food": {
+      "root": "food_versions",
+      "key": "foodId",
+      "children": {}
+    },
+    "intake": {
+      "root": "intakes",
+      "key": "id",
+      "children": {
+        "intake_items": "intakeId"
+      }
+    },
+    "nutritionDay": {
+      "root": "nutrition_days",
+      "key": "id",
+      "children": {}
+    }
+  },
+  "tables": {
+    "activities": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "title": {
+        "type": "TEXT",
+        "required": true
+      },
+      "categoryName": {
+        "type": "TEXT",
+        "required": true
+      },
+      "planId": {
+        "type": "TEXT",
+        "required": false
+      },
+      "sessionStatus": {
+        "type": "TEXT",
+        "required": true
+      },
+      "version": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "createdAtMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "updatedAtMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "isWork": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "incomeAmount": {
+        "type": "TEXT",
+        "required": false
+      },
+      "expenseAmount": {
+        "type": "TEXT",
+        "required": false
+      },
+      "currencyCode": {
+        "type": "TEXT",
+        "required": false
+      },
+      "commuteMinutes": {
+        "type": "INTEGER",
+        "required": false
+      },
+      "categoryId": {
+        "type": "TEXT",
+        "required": false
+      },
+      "projectId": {
+        "type": "TEXT",
+        "required": false
+      },
+      "projectNameSnapshot": {
+        "type": "TEXT",
+        "required": false
+      },
+      "deletedAtMillis": {
+        "type": "INTEGER",
+        "required": false
+      }
+    },
+    "activity_segments": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "activityId": {
+        "type": "TEXT",
+        "required": true
+      },
+      "startMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "endMillis": {
+        "type": "INTEGER",
+        "required": false
+      }
+    },
+    "activity_tags": {
+      "activityId": {
+        "type": "TEXT",
+        "required": true
+      },
+      "name": {
+        "type": "TEXT",
+        "required": true
+      }
+    },
+    "food_versions": {
+      "foodId": {
+        "type": "TEXT",
+        "required": true
+      },
+      "version": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "name": {
+        "type": "TEXT",
+        "required": true
+      },
+      "preparedState": {
+        "type": "TEXT",
+        "required": true
+      },
+      "kcalPer100g": {
+        "type": "TEXT",
+        "required": true
+      },
+      "sourceType": {
+        "type": "TEXT",
+        "required": true
+      },
+      "archived": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "brand": {
+        "type": "TEXT",
+        "required": false
+      },
+      "proteinGPer100g": {
+        "type": "TEXT",
+        "required": false
+      },
+      "fatGPer100g": {
+        "type": "TEXT",
+        "required": false
+      },
+      "carbGPer100g": {
+        "type": "TEXT",
+        "required": false
+      },
+      "sourceNote": {
+        "type": "TEXT",
+        "required": false
+      }
+    },
+    "intake_items": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "intakeId": {
+        "type": "TEXT",
+        "required": true
+      },
+      "foodId": {
+        "type": "TEXT",
+        "required": false
+      },
+      "foodVersion": {
+        "type": "INTEGER",
+        "required": false
+      },
+      "displayName": {
+        "type": "TEXT",
+        "required": true
+      },
+      "consumedGrams": {
+        "type": "TEXT",
+        "required": false
+      },
+      "kcalPer100gSnapshot": {
+        "type": "TEXT",
+        "required": false
+      },
+      "sourceTypeSnapshot": {
+        "type": "TEXT",
+        "required": false
+      },
+      "proteinGPer100gSnapshot": {
+        "type": "TEXT",
+        "required": false
+      },
+      "fatGPer100gSnapshot": {
+        "type": "TEXT",
+        "required": false
+      },
+      "carbGPer100gSnapshot": {
+        "type": "TEXT",
+        "required": false
+      },
+      "manualName": {
+        "type": "TEXT",
+        "required": false
+      },
+      "nutritionStatus": {
+        "type": "TEXT",
+        "required": true
+      }
+    },
+    "intakes": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "eatenAtMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "timezone": {
+        "type": "TEXT",
+        "required": true
+      },
+      "mealType": {
+        "type": "TEXT",
+        "required": true
+      },
+      "note": {
+        "type": "TEXT",
+        "required": false
+      },
+      "version": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "deletedAtMillis": {
+        "type": "INTEGER",
+        "required": false
+      }
+    },
+    "ledger_entries": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "occurredAtMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "timezone": {
+        "type": "TEXT",
+        "required": true
+      },
+      "type": {
+        "type": "TEXT",
+        "required": true
+      },
+      "source": {
+        "type": "TEXT",
+        "required": true
+      },
+      "amount": {
+        "type": "TEXT",
+        "required": true
+      },
+      "version": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "deletedAtMillis": {
+        "type": "INTEGER",
+        "required": false
+      },
+      "category": {
+        "type": "TEXT",
+        "required": false
+      },
+      "note": {
+        "type": "TEXT",
+        "required": false
+      }
+    },
+    "plan_revisions": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "planId": {
+        "type": "TEXT",
+        "required": true
+      },
+      "revision": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "scheduledStartMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "scheduledEndMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "changeReason": {
+        "type": "TEXT",
+        "required": true
+      },
+      "changedAtMillis": {
+        "type": "INTEGER",
+        "required": true
+      }
+    },
+    "plans": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "title": {
+        "type": "TEXT",
+        "required": true
+      },
+      "scheduledStartMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "scheduledEndMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "timezone": {
+        "type": "TEXT",
+        "required": true
+      },
+      "fixed": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "status": {
+        "type": "TEXT",
+        "required": true
+      },
+      "baselineStartMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "baselineEndMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "version": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "createdAtMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "updatedAtMillis": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "reminderMinutesBefore": {
+        "type": "INTEGER",
+        "required": false
+      },
+      "reminderSilent": {
+        "type": "INTEGER",
+        "required": true
+      },
+      "deletedAtMillis": {
+        "type": "INTEGER",
+        "required": false
+      }
+    },
+    "projects": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "name": {
+        "type": "TEXT",
+        "required": true
+      },
+      "archived": {
+        "type": "INTEGER",
+        "required": true
+      }
+    },
+    "time_categories": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "name": {
+        "type": "TEXT",
+        "required": true
+      },
+      "archived": {
+        "type": "INTEGER",
+        "required": true
+      }
+    },
+    "nutrition_days": {
+      "id": {
+        "type": "TEXT",
+        "required": true
+      },
+      "date": {
+        "type": "TEXT",
+        "required": true
+      },
+      "timezone": {
+        "type": "TEXT",
+        "required": true
+      },
+      "budgetKcal": {
+        "type": "TEXT",
+        "required": false
+      },
+      "exerciseKcal": {
+        "type": "TEXT",
+        "required": false
+      },
+      "proteinGoal": {
+        "type": "TEXT",
+        "required": false
+      },
+      "fatGoal": {
+        "type": "TEXT",
+        "required": false
+      },
+      "carbGoal": {
+        "type": "TEXT",
+        "required": false
+      },
+      "version": {
+        "type": "INTEGER",
+        "required": true
+      }
+    }
+  }
+}

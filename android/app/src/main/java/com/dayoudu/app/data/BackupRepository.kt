@@ -17,7 +17,7 @@ class BackupRepository(private val context: Context, private val database: Nutri
         "food_versions", "intakes", "intake_items", "plans", "plan_revisions",
         "time_categories", "projects", "activities", "activity_segments", "activity_tags",
         "sleep_logs", "value_model_versions",
-        "value_dimensions", "activity_evaluations", "dimension_ratings", "local_users", "ledger_entries",
+        "value_dimensions", "activity_evaluations", "dimension_ratings", "local_users", "ledger_entries", "nutrition_days",
     )
 
     suspend fun export(uri: Uri): Int = withContext(Dispatchers.IO) {
@@ -39,7 +39,7 @@ class BackupRepository(private val context: Context, private val database: Nutri
                 }
                 all.put(table, rows)
             }
-            JSONObject().put("schemaVersion", 10).put("exportedAt", Instant.now().toString())
+            JSONObject().put("schemaVersion", 11).put("exportedAt", Instant.now().toString())
                 .put("tables", all).put("recordCount", count)
         }
         context.contentResolver.openOutputStream(uri, "wt")?.bufferedWriter(Charsets.UTF_8)?.use {
@@ -49,6 +49,11 @@ class BackupRepository(private val context: Context, private val database: Nutri
     }
 
     suspend fun restore(uri: Uri): Int = withContext(Dispatchers.IO) {
+        database.openHelper.readableDatabase.query("SELECT name FROM sqlite_master WHERE type='table' AND name='cloud_meta'").use { table ->
+            if (table.moveToFirst()) database.openHelper.readableDatabase.query("SELECT value FROM cloud_meta WHERE key='owner'").use {
+                require(!it.moveToFirst()) { "已绑定云端的安装不能整库替换；请在独立安装中恢复备份，避免覆盖已同步数据" }
+            }
+        }
         val bytes = context.contentResolver.openInputStream(uri)?.use { stream ->
             val buffer = ByteArray(8192)
             val output = ByteArrayOutputStream()
@@ -60,16 +65,28 @@ class BackupRepository(private val context: Context, private val database: Nutri
             }
             output.toByteArray()
         } ?: throw IllegalArgumentException("无法读取备份文件")
-        val root = JSONObject(bytes.toString(Charsets.UTF_8))
+        val text = bytes.toString(Charsets.UTF_8).trimStart('\uFEFF', ' ', '\n', '\r', '\t')
+        require(text.startsWith("{")) { "请选择日有度导出的 JSON 备份；普通 TXT 日程请到“今天 → 更多 → 导入日计划”" }
+        val root = try { JSONObject(text) } catch (_: org.json.JSONException) {
+            throw IllegalArgumentException("备份 JSON 格式无效；请选择日有度导出的完整备份文件")
+        }
         val backupVersion = root.optInt("schemaVersion", -1)
-        require(backupVersion in 8..10) { "备份版本不兼容" }
-        val content = root.getJSONObject("tables")
+        require(backupVersion in 8..11) { "备份版本不兼容" }
+        val content = root.optJSONObject("tables")
+            ?: throw IllegalArgumentException("文件不是日有度整库备份；日计划文件请到“今天 → 更多”导入")
         val legacyNewTables = setOf("local_users", "ledger_entries")
-        val expectedTables = if (backupVersion < 10) tables.toSet() - legacyNewTables else tables.toSet()
+        val expectedTables = tables.toSet() -
+            (if (backupVersion < 10) legacyNewTables else emptySet()) -
+            (if (backupVersion < 11) setOf("nutrition_days") else emptySet())
         require(content.keys().asSequence().toSet() == expectedTables) { "备份表清单不完整" }
         var count = 0
         database.runInTransaction {
             val sqlite = database.openHelper.writableDatabase
+            sqlite.query("SELECT name FROM sqlite_master WHERE type='table' AND name='cloud_meta'").use { table ->
+                if (table.moveToFirst()) sqlite.query("SELECT value FROM cloud_meta WHERE key='owner'").use {
+                    require(!it.moveToFirst()) { "本机已经绑定云端，不能整库替换" }
+                }
+            }
             tables.asReversed().forEach { sqlite.delete(it, null, null) }
             tables.forEach { table ->
                 val expectedColumns = mutableSetOf<String>()
@@ -82,10 +99,13 @@ class BackupRepository(private val context: Context, private val database: Nutri
                     val rowColumns = row.keys().asSequence().toSet()
                     val legacyPlan = backupVersion == 8 && table == "plans" &&
                         rowColumns + "deletedAtMillis" == expectedColumns
-                    require(rowColumns == expectedColumns || legacyPlan) { "$table 字段不匹配" }
+                    val legacyLedger = backupVersion < 11 && table == "ledger_entries" &&
+                        rowColumns + setOf("category", "note") == expectedColumns
+                    require(rowColumns == expectedColumns || legacyPlan || legacyLedger) { "$table 字段不匹配" }
                     val values = ContentValues()
                     expectedColumns.forEach { column ->
-                        if (legacyPlan && column == "deletedAtMillis") {
+                        if ((legacyPlan && column == "deletedAtMillis") ||
+                            (legacyLedger && column in setOf("category", "note"))) {
                             values.putNull(column)
                             return@forEach
                         }
@@ -117,6 +137,13 @@ class BackupRepository(private val context: Context, private val database: Nutri
                 "SELECT COUNT(*) FROM dimension_ratings r LEFT JOIN value_dimensions d ON d.modelId=r.modelId AND d.modelVersion=r.modelVersion AND d.dimensionId=r.dimensionId WHERE d.dimensionId IS NULL",
             ).any { sql -> sqlite.query(sql).use { cursor -> cursor.moveToFirst() && cursor.getLong(0) > 0 } }
             require(!broken) { "备份中的关联记录不完整，原数据已保留" }
+            // Before first binding, a file restore replaces the local dataset. Discard dirty
+            // IDs of removed rows; first binding will seed only the restored records.
+            sqlite.query("SELECT name FROM sqlite_master WHERE type='table' AND name='cloud_dirty'").use { table ->
+                if (table.moveToFirst()) listOf("cloud_dirty","cloud_outbox","cloud_versions","cloud_conflicts").forEach {
+                    sqlite.execSQL("DELETE FROM $it")
+                }
+            }
         }
         val scheduler = ReminderScheduler(context)
         database.planDao().futureReminders(System.currentTimeMillis()).forEach { scheduler.sync(it) }

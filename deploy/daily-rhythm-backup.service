@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Rhythm encrypted MySQL backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/daily-rhythm
+UMask=0077
+ExecStart=/usr/bin/python3 /home/ubuntu/daily-rhythm/backup.py
